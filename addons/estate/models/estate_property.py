@@ -1,4 +1,3 @@
-from email.policy import default
 from odoo import fields, models
 from dateutil.relativedelta import relativedelta
 
@@ -7,7 +6,7 @@ class EstateProperty(models.Model):
     _name = "estate.property"
     _description = "Estate Property"
 
-    name = fields.Char(required=True)
+    name = fields.Char("Title", required=True)
     description = fields.Text()
     postcode = fields.Char()
     date_availability = fields.Date(
