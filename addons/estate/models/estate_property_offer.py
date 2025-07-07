@@ -7,6 +7,7 @@ from odoo.exceptions import UserError
 class EstatePropertyOffer(models.Model):
     _name = "estate.property.offer"
     _description = "Estate Property Offer"
+    _order = "price desc"
 
     price = fields.Float()
     status = fields.Selection(
@@ -20,11 +21,20 @@ class EstatePropertyOffer(models.Model):
     property_id = fields.Many2one("estate.property", string="Property", required=True)
     validity = fields.Integer(default=7)
     date_deadline = fields.Date(
-        compute="_compute_date_deadline", inverse="_inverse_date_deadline"
+        compute="_compute_date_deadline",
+        inverse="_inverse_date_deadline",
+    )
+    property_state = fields.Selection(related="property_id.state", readonly=True)
+    property_type_id = fields.Many2one(
+        related="property_id.property_type_id", store=True
     )
 
     _sql_constraints = [
-        ('check_offer_price_positive', 'CHECK(price > 0)', 'The offer price must be strictly positive.')
+        (
+            "check_offer_price_positive",
+            "CHECK(price > 0)",
+            "The offer price must be strictly positive.",
+        )
     ]
 
     @api.depends("create_date", "validity")
@@ -42,7 +52,9 @@ class EstatePropertyOffer(models.Model):
     def _inverse_date_deadline(self):
         for record in self:
             if record.date_deadline and record.create_date:
-                record.validity = (record.date_deadline - record.create_date.date()).days
+                record.validity = (
+                    record.date_deadline - record.create_date.date()
+                ).days
             else:
                 record.validity = (record.date_deadline - fields.Date.today()).days
 
@@ -51,6 +63,7 @@ class EstatePropertyOffer(models.Model):
             if record.property_id.state == "sold":
                 raise UserError("Cannot accept an offer for a sold property.")
             record.status = "accepted"
+            record.property_id.state = "offer_accepted"
             record.property_id.selling_price = record.price
             record.property_id.buyer_id = record.partner_id
         return True

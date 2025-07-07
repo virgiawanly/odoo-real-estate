@@ -1,19 +1,33 @@
 <?xml version="1.0"?>
 <odoo>
 
+  <!-- Action -->
+  <record id="estate_property_offer_action" model="ir.actions.act_window">
+    <field name="name">Property Offers</field>
+    <field name="res_model">estate.property.offer</field>
+    <field name="view_mode">tree,form</field>
+    <field name="domain">[('property_type_id', '=', active_id)]</field>
+  </record>
+
   <!-- Tree (List) -->
   <record id="estate_property_offer_view_tree" model="ir.ui.view">
     <field name="name">estate.property.offer.view.tree</field>
     <field name="model">estate.property.offer</field>
     <field name="arch" type="xml">
-      <tree>
+      <tree editable="bottom" decoration-success="status == 'accepted'"
+        decoration-danger="status == 'refused'">
         <field name="price" />
         <field name="partner_id" />
         <field name="validity" />
         <field name="date_deadline" />
-        <button name="action_accept" type="object" icon="fa-check" title="Accept" class="text-success" />
-        <button name="action_refuse" type="object" icon="fa-times" title="Refuse" class="text-danger" />
-        <field name="status" />
+        <button name="action_accept" type="object" icon="fa-check" title="Accept"
+          class="text-success"
+          invisible="status or property_state in ['offer_accepted', 'sold', 'canceled']" />
+        <button name="action_refuse" type="object" icon="fa-times" title="Refuse"
+          class="text-danger"
+          invisible="status or property_state in ['offer_accepted', 'sold', 'canceled']" />
+        <field name="property_state" column_invisible="True" />
+        <field name="status" column_invisible="True" />
       </tree>
     </field>
   </record>
